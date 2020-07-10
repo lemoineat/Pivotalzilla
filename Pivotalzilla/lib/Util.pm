@@ -128,6 +128,8 @@ sub get_labels {
 ## Create a story on pivotal tracker
 ## Args:
 ##    $bug: ref of the bug to link to the story
+## Ret:
+##    $id_pivotal: int, the id of the story
 sub new_pivotal_story{
   my ($bug,) = @_;
   my $id = %$bug{bug_id};
@@ -138,7 +140,7 @@ sub new_pivotal_story{
   my $link_to_bugzilla = "$CONFIG{bugzilla_url}/show_bug.cgi?id=$id\n";
   my $description = 'link to bugzilla: ' . $link_to_bugzilla . get_bug_description($id);
   my $status = $satus_bugzilla_to_pivotal{$bug->{bug_status}};
-  my $id_pivotal = create_story($name, $description, $status);
+  my $id_pivotal = create_story($name, $id, $description, $status);
   $bug->{'cf_pivotal_story_id'} = $id_pivotal;
   foreach my $label (@labels){
     add_label($id_pivotal, $label);
@@ -152,6 +154,7 @@ sub new_pivotal_story{
     my $text = "$comment_body\n\nFrom $author on Bugzilla";
     post_comment($id_pivotal, $text);
   }
+  return $id_pivotal;
 
 }
 
@@ -195,16 +198,17 @@ sub get_story {
 ## Create a story on pivotal tracker.
 ## Args:
 ##    $name: string, name of the story
+##    $id: int, id of the bug on bugzilla
 ##    $description: string: description of the story
 ##    $status: value of %satus_bugzilla_to_pivotal, status of the bug
 ## Ret:
 ##    $id: int, the id of the story
 sub create_story {
-  my ($name, $description, $status,) = @_;
+  my ($name, $id, $description, $status,) = @_;
   my $url = "https://www.pivotaltracker.com/services/v5/projects/$CONFIG{project_id}/stories";
   my $data = {
     'current_state' => 'started',
-    'name' => "pivotalzilla test: $name",
+    'name' => "Bug $id: $name",
     'description' => $description,
     'story_type' => 'bug',
     'current_state' => $status,

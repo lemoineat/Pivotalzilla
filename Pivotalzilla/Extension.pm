@@ -67,7 +67,9 @@ sub bug_end_of_update {
     }else{
       my $id = %$bug{bug_id};
       if (check_create($id)){
-        new_pivotal_story($bug);
+        my $id_pivotal = new_pivotal_story($bug);
+        my $dbh    = Bugzilla->dbh;
+        $dbh->do('UPDATE bugs SET cf_pivotal_story_id = ? WHERE bug_id = ?', undef, ($id_pivotal, $id));
       }
     }
 }
@@ -80,7 +82,7 @@ sub install_update_db{
 
   $field = Bugzilla::Field->create({
       name        => 'pivotal_story_id',
-      description => 'Id of the linked story on pivotal tracker',
+      description => 'Story #',
       type        => FIELD_TYPE_INTEGER,        # From list in Constants.pm
       enter_bug   => 0,
       buglist     => 0,

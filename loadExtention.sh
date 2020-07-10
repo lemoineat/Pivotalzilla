@@ -1,7 +1,7 @@
 #!/bin/sh
 # Copy to the server files the exetention and update the server.
 
-#systemctl stop httpd
+systemctl stop httpd
 
 BUGZILLA_FILE='/srv/http/bugzilla'
 
@@ -11,4 +11,4 @@ cp Pivotalzilla/lib/Util.pm $BUGZILLA_FILE/extensions/Pivotalzilla/lib/Util.pm
 
 cd $BUGZILLA_FILE/
 perl checksetup.pl
-#systemctl start httpd
+systemctl start httpd
