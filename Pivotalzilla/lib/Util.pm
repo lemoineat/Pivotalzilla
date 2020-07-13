@@ -41,6 +41,7 @@ our @EXPORT = qw(
   add_label
   delete_story
   %satus_bugzilla_to_pivotal
+  %changed_status_on_create
 );
 
 my $ua = LWP::UserAgent->new();
@@ -57,6 +58,17 @@ our %satus_bugzilla_to_pivotal = (
   'RESOLVED' => 'delivered',
   'VERIFIED' => 'accepted',
 );
+
+## When the bug is linked with pivotal create, the hashmap is used to
+## change the status to another one automaticaly.
+our %changed_status_on_create = (
+  'UNCONFIRMED' => 'CONFIRMED',
+  'CONFIRMED' => undef,
+  'IN_PROGRESS' => undef,
+  'RESOLVED' => undef,
+  'VERIFIED' => undef,
+);
+
 
 ## Check is the bug contains a comments with the string '/pivotal create' inside.
 ## Those comments are deleted and replaced by the comment without '/pivotal
@@ -215,8 +227,8 @@ sub create_story {
   };
   my $r = HTTP::Request->new('POST', $url, $headers_w, encode_json($data));
   my $res = $ua->request($r);
-  my $id = decode_json($res->{_content})->{id};
-  return $id;
+  my $pivotal_id = decode_json($res->{_content})->{id};
+  return $pivotal_id;
 }
 
 ## Modify the status of a story on pivotal tracker.

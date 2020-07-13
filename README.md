@@ -48,3 +48,14 @@ story on Pivotal Tracker, with the author added.
 
 The `/pivotal ---` commands are removed from the comment of Bugzilla and the
 comments sent to Pivoral Tracker.
+
+#### Corresponding status
+
+You can change the mapped status on pivotal tracker by modifying the hashmap
+`%satus_bugzilla_to_pivotal` in `lib/Utils.pm`.
+
+#### Modify status on late linking
+
+If you link the bug to a new story **after** it's creation, you can modify its
+status depending on the current status. This can be configured by modifying the
+`%changed_status_on_create` in `lib/Utils.pm`.

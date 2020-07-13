@@ -67,9 +67,12 @@ sub bug_end_of_update {
     }else{
       my $id = %$bug{bug_id};
       if (check_create($id)){
+        if (defined $changed_status_on_create{$bug->{bug_status}}){
+          $bug->set_bug_status($changed_status_on_create{$bug->{bug_status}}, {});
+        }
         my $id_pivotal = new_pivotal_story($bug);
-        my $dbh    = Bugzilla->dbh;
-        $dbh->do('UPDATE bugs SET cf_pivotal_story_id = ? WHERE bug_id = ?', undef, ($id_pivotal, $id));
+        $bug->{added_comments} = []; # Avoid duplicat comments
+        $bug->update(); # save the changes in the database
       }
     }
 }
