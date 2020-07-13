@@ -3,8 +3,8 @@ changes made on bugzilla on [Pivotal Tracker](https://www.pivotaltracker.com/).
 
 ### Install
 
-First you have to copy the file `Pivotalzilla/lib/Credentials.pm.template` to
-`Pivotalzilla/lib/Credentials.pm`, and modify the content of `Credentials.pm`.
+First you have to copy the file `lib/Credentials.pm.template` to
+`lib/Credentials.pm`, and modify the content of `Credentials.pm`.
 
 You have to replace `my api token` by the Pivotal Tracker API token (found your
   Profile page on Pivotal Tracker), `42` by your project id (you can find it in
@@ -12,8 +12,9 @@ You have to replace `my api token` by the Pivotal Tracker API token (found your
   and `127.0.0.1/bugzilla` by the url of your bugzilla server (look at the url
   of a bug on bugzilla, and keep only the begining `THI_URL/show_bug.cgi?id=42`)
 
-Then you have to change the `loadExtention.sh` file, and replace `BUGZILLA_FILE`
-variable by the link to the file were your Bugzilla server is installed.
+Place this repository (name `Pivotzilla`, it's important), in the `extensions`
+file of your bugzilla install, and run `perl checksetup.pl` (in the root of the
+  bugzilla file). You may need to restart bugzilla.
 
 You will probably need to restart the server service, if you use systemctl and
   httpd, you can uncomment the `systemctl stop httpd` and `systemctl start httpd`.
@@ -52,10 +53,13 @@ comments sent to Pivoral Tracker.
 #### Corresponding status
 
 You can change the mapped status on pivotal tracker by modifying the hashmap
-`%satus_bugzilla_to_pivotal` in `lib/Utils.pm`.
+`%satus_bugzilla_to_pivotal` in `lib/Config.pm` (**the one in the lib/ directory**).
+
+A default value can be set for status not found in `%satus_bugzilla_to_pivotal`,
+with `$default_pivotal_status`.
 
 #### Modify status on late linking
 
 If you link the bug to a new story **after** it's creation, you can modify its
 status depending on the current status. This can be configured by modifying the
-`%changed_status_on_create` in `lib/Utils.pm`.
+`%changed_status_on_create` in `lib/Config.pm`.

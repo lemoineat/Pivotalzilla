@@ -27,6 +27,7 @@ use HTTP::Request ();
 use JSON;
 use LWP::UserAgent;
 use Bugzilla::Extension::Pivotalzilla::Credentials;
+use Bugzilla::Extension::Pivotalzilla::Config;
 
 use parent qw(Exporter);
 our @EXPORT = qw(
@@ -40,35 +41,12 @@ our @EXPORT = qw(
   post_comment
   add_label
   delete_story
-  %satus_bugzilla_to_pivotal
-  %changed_status_on_create
 );
 
 my $ua = LWP::UserAgent->new();
 my $headers_r = ['X-TrackerToken' => $CONFIG{'token'}];
 my $headers_w = ['X-TrackerToken' => $CONFIG{'token'},
                  'Content-Type' => 'application/json'];
-
-
-## Map the bugzilla status to the pivotal tracker status
-our %satus_bugzilla_to_pivotal = (
-  'UNCONFIRMED' => 'unstarted',
-  'CONFIRMED' => 'started',
-  'IN_PROGRESS' => 'started',
-  'RESOLVED' => 'delivered',
-  'VERIFIED' => 'accepted',
-);
-
-## When the bug is linked with pivotal create, the hashmap is used to
-## change the status to another one automaticaly.
-our %changed_status_on_create = (
-  'UNCONFIRMED' => 'CONFIRMED',
-  'CONFIRMED' => undef,
-  'IN_PROGRESS' => undef,
-  'RESOLVED' => undef,
-  'VERIFIED' => undef,
-);
-
 
 ## Check is the bug contains a comments with the string '/pivotal create' inside.
 ## Those comments are deleted and replaced by the comment without '/pivotal
@@ -151,7 +129,12 @@ sub new_pivotal_story{
   my $name = $bug->{short_desc};
   my $link_to_bugzilla = "$CONFIG{bugzilla_url}/show_bug.cgi?id=$id\n";
   my $description = 'link to bugzilla: ' . $link_to_bugzilla . get_bug_description($id);
-  my $status = $satus_bugzilla_to_pivotal{$bug->{bug_status}};
+  my $status;
+  if (exists($satus_bugzilla_to_pivotal{$bug->{bug_status}})){
+    $status = $satus_bugzilla_to_pivotal{$bug->{bug_status}};
+  }else{
+    $status = $default_pivotal_status;
+  }
   my $id_pivotal = create_story($name, $id, $description, $status);
   $bug->{'cf_pivotal_story_id'} = $id_pivotal;
   foreach my $label (@labels){

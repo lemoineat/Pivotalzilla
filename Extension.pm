@@ -26,6 +26,7 @@ use Bugzilla::Constants;
 use parent qw(Bugzilla::Extension);
 
 use Bugzilla::Extension::Pivotalzilla::Util;
+use Bugzilla::Extension::Pivotalzilla::Config;
 
 our $VERSION = '0.01';
 
@@ -57,7 +58,12 @@ sub bug_end_of_update {
       }
       # Update status
       if ($bug->{bug_status} ne $old_bug->{bug_status}){
-        my $status = $satus_bugzilla_to_pivotal{$bug->{bug_status}};
+        my $status;
+        if (exists($satus_bugzilla_to_pivotal{$bug->{bug_status}})){
+          $status = $satus_bugzilla_to_pivotal{$bug->{bug_status}};
+        }else{
+          $status = $default_pivotal_status;
+        }
         modify_status($story_id, $status);
       }
       my @labels = get_labels($id);
