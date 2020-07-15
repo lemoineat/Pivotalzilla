@@ -53,8 +53,10 @@ sub bug_end_of_update {
       foreach my $comment (@$comments){
         my $comment_body = $comment->body;
         my $author = $comment->author->identity;
-        my $text = "$comment_body\n\nFrom $author on Bugzilla";
-        post_comment($story_id, $text);
+        unless ($comment_body =~ /Pivotal Tracker\z/){
+            my $text = "$comment_body\n\nFrom $author on Bugzilla";
+            post_comment($story_id, $text);
+        }
       }
       # Update status
       if ($bug->{bug_status} ne $old_bug->{bug_status}){
