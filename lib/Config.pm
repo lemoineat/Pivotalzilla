@@ -27,6 +27,7 @@ our @EXPORT = qw(
   %satus_bugzilla_to_pivotal
   %changed_status_on_create
   $default_pivotal_status
+  $pivotalzibot_compatible
   );
 
 ## Map the bugzilla status to the pivotal tracker status
@@ -46,4 +47,7 @@ our $default_pivotal_status = 'started';
 our %changed_status_on_create = (
   'UNCONFIRMED' => 'CONFIRMED'
 );
+
+## If the extention works with pivotalzibot
+our $pivotalzibot_compatible = 0;
 1;

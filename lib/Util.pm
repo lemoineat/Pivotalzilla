@@ -28,11 +28,13 @@ use JSON;
 use LWP::UserAgent;
 use Bugzilla::Extension::Pivotalzilla::Credentials;
 use Bugzilla::Extension::Pivotalzilla::Config;
+use Switch;
+use Data::Dumper;
+
 
 use parent qw(Exporter);
 our @EXPORT = qw(
-  check_create
-  get_labels
+  read_commands
   new_pivotal_story
   get_bug_description
   get_story
@@ -41,6 +43,7 @@ our @EXPORT = qw(
   post_comment
   add_label
   delete_story
+  remove_error
 );
 
 my $ua = LWP::UserAgent->new();
@@ -48,71 +51,125 @@ my $headers_r = ['X-TrackerToken' => $CONFIG{'token'}];
 my $headers_w = ['X-TrackerToken' => $CONFIG{'token'},
                  'Content-Type' => 'application/json'];
 
-## Check is the bug contains a comments with the string '/pivotal create' inside.
-## Those comments are deleted and replaced by the comment without '/pivotal
-## create'
+
+## List all the commands in the comments in parameters.
 ## Args:
-##    $id_bug: the id of the bug
+##    $commnents: a ref of the array of comments.
+##    $id_bug: int, the id of the bug.
 ## Ret:
-##    $count: the number of occurence of '/pivotal create' (can be use as a
-##            boolean)
-sub check_create {
-  my ($id_bug,) = @_;
-  my $count = 0;
+##    $map: hashmap reference,
+##    {
+##      create: bool, if `/pivotal create` entered
+##      clear: bool, if `/pivotal clear` entered
+##      labels: array ref, list of label to add (strings),
+##      new_comments: array ref, list of comments to add,
+##      error_comments: array ref, list of comments to add because of error.,
+##    };
+sub read_commands {
+  my ($comments_ref, $id_bug,) = @_;
+  my @labels = ();
+  my @new_comments = ();
+  my @error_comments = ();
+  my $clear = 0;
+  my $create = 0;
+
 
   # List the content of every comments of bug.
-  my @comments = Bugzilla::Comment->match({bug_id => $id_bug});
-  foreach my $array (@comments){
-    foreach my $comment (@$array){
-      my $val = $comment->body;
-      my $old_count = $count;
-      while ($val =~ s/ *\/pivotal create\n?//){
-        $count++;
+  my @comments = @$comments_ref;
+
+  foreach my $comment (@comments){
+    my $text = $comment->body;
+    my @lines = ();
+    foreach my $line(split('\n', $text)){
+      my $old_line = $line;
+      if ($line !~ s/^\/pivotal//){
+        push(@lines, $line);
+        next;
       }
-      if ($old_count != $count){ # if the comment is modified
-        $comment->remove_from_db();
-        my $creation_comment = {
-          'thetext' => $val,
-          'bug_id' => $id_bug,
+      my @args = split(' ', $line);
+      if (!@args){
+        my $error = {
+         'thetext' => "PIVOTAL ERROR: $old_line\nNo command entered",
+         'bug_id' => $id_bug,
         };
-        Bugzilla::Comment->create($creation_comment);
+        push(@error_comments, $error);
+      }else{
+        switch($args[0]){
+          case 'create' {
+            $create = 1;
+            my $arg_line = join(' ', @args[1..$#args]);
+            my @matches = ($arg_line =~ /\[([^\[\]]+)\]|(\w+)/g);
+            foreach my $label (@matches){
+              if (defined $label){
+                push(@labels, $label);
+              }
+            }
+          }case 'label' {
+            my $arg_line = join(' ', @args[1..$#args]);
+            my @matches = ($arg_line =~ /\[([^\[\]]+)\]|(\w+)/g);
+            foreach my $label (@matches){
+              if (defined $label){
+                push(@labels, $label);
+              }
+            }
+          }case 'clear' {
+            $clear = 1;
+            if ($#args > 1){
+              my $error = {
+                'thetext' => "PIVOTAL ERROR: $old_line\nclear takes no parameters, parameters ignored.",
+                'bug_id' => $id_bug,
+              };
+              push(@error_comments, $error);
+            }
+          }else{
+            my $error = {
+              'thetext' => "PIVOTAL ERROR: $old_line\nUnknown command $args[0]",
+              'bug_id' => $id_bug,
+            };
+            push(@error_comments, $error);
+          }
+        }
       }
+
     }
+    my $new_text = join('\n', @lines);
+
+    if ($new_text !~ /^\s*$/){
+      my $creation_comment = {
+        'thetext' => $new_text,
+        'bug_id' => $id_bug,
+        'author_' => $comment->author->identity,
+      };
+      push(@new_comments, $creation_comment);
+    }
+    #$comment->remove_from_db();
+    #Bugzilla::Comment->create($creation_comment);
+
   }
-  return $count;
+
+  my $map  = {
+    create => $create,
+    clear => $clear,
+    labels => \@labels,
+    new_comments => \@new_comments,
+    error_comments => \@error_comments,
+  };
+
+  return $map;
 }
 
-## List all the label added with '/pivotal label foo' inside comments.
-## Those comments are deleted and replaced by the comment without '/pivotal
-## create'
+## Remove all error commant.
 ## Args:
-##    $id_bug: the id of the bug
-## Ret:
-##    @labels: string[], the list of the labels to add to the pivotal story
-sub get_labels {
-  my ($id_bug,) = @_;
-  my @labels = ();
-
-  # List the content of every comments of bug.
-  my @comments = Bugzilla::Comment->match({bug_id => $id_bug});
-  foreach my $array (@comments){
-    foreach my $comment (@$array){
-      my $text = $comment->body;
-      while ($text =~ s/ *\/pivotal label *\[(.*?)\]\n?//){
-        push @labels, $1;
-      }
-      while ($text =~ s/ *\/pivotal label *(\w*)\n?//){
-        push @labels, $1;
-      }
+##   $bug_id: id of the bug
+sub remove_error{
+  my ($bug_id,) = @_;
+  my $comments = Bugzilla::Comment->match({bug_id => $bug_id});
+  foreach my $comment(@$comments){
+    my $text = $comment->body;
+    if ($text =~ /^PIVOTAL ERROR: /){
       $comment->remove_from_db();
-      my $creation_comment = {
-        'thetext' => $text,
-        'bug_id' => $id_bug,
-      };
-      Bugzilla::Comment->create($creation_comment);
     }
   }
-  return @labels;
 }
 
 ## Create a story on pivotal tracker
@@ -124,8 +181,6 @@ sub new_pivotal_story{
   my ($bug,) = @_;
   my $id = %$bug{bug_id};
 
-  my @labels = get_labels($id); # This function update the description, so it
-                                # has before we send the new story.
   my $name = $bug->{short_desc};
   my $link_to_bugzilla = "$CONFIG{bugzilla_url}/show_bug.cgi?id=$id\n";
   my $description = 'link to bugzilla: ' . $link_to_bugzilla . get_bug_description($id);
@@ -137,20 +192,7 @@ sub new_pivotal_story{
   }
   my $id_pivotal = create_story($name, $id, $description, $status);
   $bug->{'cf_pivotal_story_id'} = $id_pivotal;
-  foreach my $label (@labels){
-    add_label($id_pivotal, $label);
-  }
-
-  my $comments_tmp = Bugzilla::Comment->match({bug_id => $id});
-  my @comments = @$comments_tmp[1 .. $#$comments_tmp];
-  foreach my $comment (@comments){
-    my $comment_body = $comment->body;
-    my $author = $comment->author->identity;
-    my $text = "$comment_body\n\nFrom $author on Bugzilla";
-    post_comment($id_pivotal, $text);
-  }
   return $id_pivotal;
-
 }
 
 ## Return the description of the bug. It's the first comment (which exists, cf src)
@@ -184,9 +226,7 @@ sub get_story {
   my $r = HTTP::Request->new('GET', $url, $headers_r );
   my $res = $ua->request($r);
 
-  #print Dumper($res);
   my $story = decode_json($res->{_content});
-  #print Dumper($story);
   return $story;
 }
 
