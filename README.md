@@ -31,7 +31,8 @@ To link a bug to a story on Pivotal Tracker, you have to write `/pivotal create`
 in the comment of your bug on Bugzilla. If the bug already exists on Bugzilla,
 the comments will be send to Pivotal Tracker retroactively. If the bug is already
 linked to a story, it won't create another story. The story contains a link to the
-Bugzilla bug in description. You can add labels after `/pivotal create`. If you
+Bugzilla bug in description and a link to the story is added in a comment of the bug
+in bugzilla. You can add labels after `/pivotal create`. If you
 want to add a label with special characters, you have to put the label between `[]`.
 `/pivotal create test bugzilla [my cool label!]` create a story and add the labels
 `test`, `bugzilla` and `my cool label!`. Adding a label that does not
@@ -50,13 +51,16 @@ When the bug status is changed on Bugzilla, the bug status is changed on Pivotal
 Tracker accordingly. You can change the mapping of the status by editing the
 `%satus_bugzilla_to_pivotal` hashmap in `Pivotalzilla/lib/Util.pm`.
 
+If the new status is in %create_on_status in the lib/Config.pm file, a story is create like if '/pivotal create'
+was written in the comments.
+
 #### Commenting
 
 When you make a comment on a linked bug on Bugzilla, the comment is sent to the
 story on Pivotal Tracker, with the author added.
 
-The `/pivotal ---` commands are removed from the comment of Bugzilla and the
-comments sent to Pivoral Tracker.
+~~The `/pivotal ---` commands are removed from the comment of Bugzilla and the
+comments sent to Pivoral Tracker.~~
 
 #### Error
 
@@ -79,3 +83,7 @@ You can modify its status depending on the current status. This can be configure
 #### pivotalzibot
 
 You can avoid sending back messages sent by pivotalzibot by setting to `1` `$pivotalzibot_compatible` in `lib/config.pm`
+
+### TODO
+
+Check the issu with the breaklines. For now, we don't edit/replace the comments. 

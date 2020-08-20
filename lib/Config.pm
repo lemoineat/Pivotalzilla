@@ -26,6 +26,7 @@ use parent qw(Exporter);
 our @EXPORT = qw(
   %satus_bugzilla_to_pivotal
   %changed_status_on_create
+  %create_on_status
   $default_pivotal_status
   $pivotalzibot_compatible
   );
@@ -42,10 +43,16 @@ our %satus_bugzilla_to_pivotal = (
 ## The status on pivotal if the bugzilla status is not in %satus_bugzilla_to_pivotal
 our $default_pivotal_status = 'started';
 
-## When the bug is linked with pivotal create, the hashmap is used to
+## When the bug is linked with pivotal create, this hashmap is used to
 ## change the status to another one automaticaly.
 our %changed_status_on_create = (
   'UNCONFIRMED' => 'CONFIRMED'
+);
+
+## When a bug change its status for one in this hashmap, a story on pivotal 
+## is created and linked to the bug.
+our %create_on_status = (
+  'CONFIRMED' => 1,
 );
 
 ## If the extention works with pivotalzibot

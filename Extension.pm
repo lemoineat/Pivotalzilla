@@ -4,7 +4,7 @@
 #
 # Pivotalzilla is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
+# the Free Software Foundation, either version 3 of the License, oruse Bugzilla::Extension::Pivotalzilla::Config;
 # (at your option) any later version.
 #
 # Foobar is distributed in the hope that it will be useful,
@@ -49,7 +49,7 @@ our $VERSION = '0.01';
 sub bug_end_of_update {
   my ($self, $args) = @_;
   my $bug = $args->{bug};
-  my $id = $bug->bug_id;
+  my $id = $bug->bug_id;use Bugzilla::Extension::Pivotalzilla::Config;
   my $old_bug = $args->{old_bug};
   my $story_id = $bug->{'cf_pivotal_story_id'};
 
@@ -62,6 +62,10 @@ sub bug_end_of_update {
   }
   my $commands = read_commands($comments, $id);
 
+  if (($bug->{bug_status} ne $old_bug->{bug_status}) && (%create_on_status{$bug->{bug_status}})){
+    $commands->{create} = 1;
+  }
+
   # If the story is already created, we don't need to create it again.
   unless ($story_id == 0){
     $commands->{create} = 0;
@@ -69,7 +73,7 @@ sub bug_end_of_update {
 
   # Modify and post comments on bugzilla.
   foreach my $comment (@$comments){
-    $comment->remove_from_db();
+    #$comment->remove_from_db();
   }
   my $new_comments = $commands->{new_comments};
   foreach my $comment (@$new_comments){
@@ -98,6 +102,15 @@ sub bug_end_of_update {
         $bug->set_bug_status($changed_status_on_create{$bug->{bug_status}}, {});
       }
       $story_id = new_pivotal_story($bug);
+
+      my $comment_story = "story create: https://www.pivotaltracker.com/services/v5/projects/$CONFIG{project_id}/stories/$story_id";
+      $bug->add_comment(
+        $comment_story,
+        {
+            type => CMT_NORMAL,
+        }
+      );
+      $bug->update();
 
       # Post all comments
       my @comments = @$all_comments[1 .. scalar(@$all_comments)-1];

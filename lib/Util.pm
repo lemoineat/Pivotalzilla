@@ -44,6 +44,8 @@ our @EXPORT = qw(
   add_label
   delete_story
   remove_error
+  %CONFIG
+  %create_on_status
 );
 
 my $ua = LWP::UserAgent->new();
@@ -140,7 +142,7 @@ sub read_commands {
         'bug_id' => $id_bug,
         'author_' => $comment->author->identity,
       };
-      push(@new_comments, $creation_comment);
+      #push(@new_comments, $creation_comment);
     }
     #$comment->remove_from_db();
     #Bugzilla::Comment->create($creation_comment);
