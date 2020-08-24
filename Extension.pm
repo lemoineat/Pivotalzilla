@@ -4,7 +4,7 @@
 #
 # Pivotalzilla is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
+# the Free Software Foundation, either version 3 of the License, oruse Bugzilla::Extension::Pivotalzilla::Config;
 # (at your option) any later version.
 #
 # Foobar is distributed in the hope that it will be useful,
@@ -49,7 +49,7 @@ our $VERSION = '0.01';
 sub bug_end_of_update {
   my ($self, $args) = @_;
   my $bug = $args->{bug};
-  my $id = $bug->bug_id;
+  my $id = $bug->bug_id;use Bugzilla::Extension::Pivotalzilla::Config;
   my $old_bug = $args->{old_bug};
   my $story_id = $bug->{'cf_pivotal_story_id'};
 
