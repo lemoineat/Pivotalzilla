@@ -103,7 +103,7 @@ sub bug_end_of_update {
       }
       $story_id = new_pivotal_story($bug);
 
-      my $comment_story = "story create: https://www.pivotaltracker.com/services/v5/projects/$CONFIG{project_id}/stories/$story_id";
+      my $comment_story = "story create: https://www.pivotaltracker.com/n/projects/$CONFIG{project_id}/stories/$story_id";
       $bug->add_comment(
         $comment_story,
         {
