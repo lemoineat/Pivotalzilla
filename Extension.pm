@@ -4,7 +4,7 @@
 #
 # Pivotalzilla is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, oruse Bugzilla::Extension::Pivotalzilla::Config;
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # Foobar is distributed in the hope that it will be useful,
@@ -49,7 +49,7 @@ our $VERSION = '0.01';
 sub bug_end_of_update {
   my ($self, $args) = @_;
   my $bug = $args->{bug};
-  my $id = $bug->bug_id;use Bugzilla::Extension::Pivotalzilla::Config;
+  my $id = $bug->bug_id;
   my $old_bug = $args->{old_bug};
   my $story_id = $bug->{'cf_pivotal_story_id'};
 
@@ -103,14 +103,20 @@ sub bug_end_of_update {
       }
       $story_id = new_pivotal_story($bug);
 
-      my $comment_story = "story create: https://www.pivotaltracker.com/services/v5/projects/$CONFIG{project_id}/stories/$story_id";
-      $bug->add_comment(
-        $comment_story,
-        {
-            type => CMT_NORMAL,
-        }
-      );
-      $bug->update();
+      my $comment_story = "story create: https://www.pivotaltracker.com/n/projects/$CONFIG{project_id}/stories/$story_id";
+      # It seems to be the good way to post a comment on bugzilla, but for some reason it crashs some times
+      # (depending on the author?)
+      #$bug->add_comment(
+      #  $comment_story,
+      #  {
+      #      type => CMT_NORMAL,
+      #  }
+      #);
+      #$bug->update();
+
+      # So, for now whe create the comment in the database, wich seems to be buggy with the en of lines,
+      # but this is a one line comment so it should be ok.
+      Bugzilla::Comment->create({'thetext' => $comment_story, 'bug_id' => $id});
 
       # Post all comments
       my @comments = @$all_comments[1 .. scalar(@$all_comments)-1];
