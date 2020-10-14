@@ -1,8 +1,8 @@
 # Copyright(C) 2020 Lemoine Automation Technologies
 #
-# This file is part of Pivotalzilla.
+# This file is part of Trackerzilla.
 #
-# Pivotalzilla is free software: you can redistribute it and/or modify
+# Trackerzilla is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -16,7 +16,7 @@
 # along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
 
-package Bugzilla::Extension::Pivotalzilla::Util;
+package Bugzilla::Extension::Trackerzilla::Util;
 
 use 5.10.1;
 use strict;
@@ -26,8 +26,8 @@ use Bugzilla::Constants;
 use HTTP::Request ();
 use JSON;
 use LWP::UserAgent;
-use Bugzilla::Extension::Pivotalzilla::Credentials;
-use Bugzilla::Extension::Pivotalzilla::Config;
+use Bugzilla::Extension::Trackerzilla::Credentials;
+use Bugzilla::Extension::Trackerzilla::Config;
 use Switch;
 use Data::Dumper;
 
@@ -280,7 +280,7 @@ sub modify_status {
 sub post_comment {
   my ($story_id, $comment,) = @_;
   my $url = "https://www.pivotaltracker.com/services/v5/projects/$CONFIG{project_id}/stories/$story_id/comments";
-  while ($comment =~ s/ *\/pivotal label *\[(.*?)\]\n?//){} # remove pivotalzilla commands
+  while ($comment =~ s/ *\/pivotal label *\[(.*?)\]\n?//){} # remove trackerzilla commands
   while ($comment =~ s/ *\/pivotal label *(\w*)\n?//){}
   my $data = {
     'text' => $comment,

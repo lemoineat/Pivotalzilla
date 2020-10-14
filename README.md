@@ -1,4 +1,4 @@
-Pivotalzilla is a [Bugzilla](https://www.bugzilla.org/) extention that mirror the
+Trackerzilla is a [Bugzilla](https://www.bugzilla.org/) extention that mirror the
 changes made on bugzilla on [Pivotal Tracker](https://www.pivotaltracker.com/).
 
 ### Install
@@ -49,7 +49,7 @@ that does not already exists on Pivotal Tracker is not recommended.
 
 When the bug status is changed on Bugzilla, the bug status is changed on Pivotal
 Tracker accordingly. You can change the mapping of the status by editing the
-`%satus_bugzilla_to_pivotal` hashmap in `Pivotalzilla/lib/Util.pm`.
+`%satus_bugzilla_to_pivotal` hashmap in `Trackerzilla/lib/Util.pm`.
 
 If the new status is in %create_on_status in the lib/Config.pm file, a story is create like if '/pivotal create'
 was written in the comments.
@@ -80,9 +80,9 @@ with `$default_pivotal_status`.
 
 You can modify its status depending on the current status. This can be configured by modifying the `%changed_status_on_create` in `lib/Config.pm`.
 
-#### pivotalzibot
+#### trackerzibot
 
-You can avoid sending back messages sent by pivotalzibot by setting to `1` `$pivotalzibot_compatible` in `lib/config.pm`
+You can avoid sending back messages sent by trackerzibot by setting to `1` `$trackerzibot_compatible` in `lib/config.pm`
 
 ### TODO
 

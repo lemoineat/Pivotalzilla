@@ -1,8 +1,8 @@
 # Copyright(C) 2020 Lemoine Automation Technologies
 #
-# This file is part of Pivotalzilla.
+# This file is part of Trackerzilla.
 #
-# Pivotalzilla is free software: you can redistribute it and/or modify
+# Trackerzilla is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
-package Bugzilla::Extension::Pivotalzilla;
+package Bugzilla::Extension::Trackerzilla;
 
 use 5.10.1;
 use strict;
@@ -27,8 +27,8 @@ use Data::Dumper;
 
 use parent qw(Bugzilla::Extension);
 
-use Bugzilla::Extension::Pivotalzilla::Util;
-use Bugzilla::Extension::Pivotalzilla::Config;
+use Bugzilla::Extension::Trackerzilla::Util;
+use Bugzilla::Extension::Trackerzilla::Config;
 
 our $VERSION = '0.01';
 
@@ -131,7 +131,7 @@ sub bug_end_of_update {
       foreach my $comment (@$new_comments){
         my $comment_body = $comment->{thetext};
         my $author = $comment->{author_};
-        unless (($pivotalzibot_compatible) && ($comment_body =~ /\@bugs\b/)){
+        unless (($trackerzibot_compatible) && ($comment_body =~ /\@bugs\b/)){
             my $text = "$comment_body\n\nFrom $author on Bugzilla";
             post_comment($story_id, $text);
         }

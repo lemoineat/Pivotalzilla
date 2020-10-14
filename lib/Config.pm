@@ -1,8 +1,8 @@
 # Copyright(C) 2020 Lemoine Automation Technologies
 #
-# This file is part of Pivotalzilla.
+# This file is part of Trackerzilla.
 #
-# Pivotalzilla is free software: you can redistribute it and/or modify
+# Trackerzilla is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -16,7 +16,7 @@
 # along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
 
-package Bugzilla::Extension::Pivotalzilla::Config;
+package Bugzilla::Extension::Trackerzilla::Config;
 
 use 5.10.1;
 use strict;
@@ -28,7 +28,7 @@ our @EXPORT = qw(
   %changed_status_on_create
   %create_on_status
   $default_pivotal_status
-  $pivotalzibot_compatible
+  $trackerzibot_compatible
   );
 
 ## Map the bugzilla status to the pivotal tracker status
@@ -55,6 +55,6 @@ our %create_on_status = (
   'CONFIRMED' => 1,
 );
 
-## If the extention works with pivotalzibot
-our $pivotalzibot_compatible = 0;
+## If the extention works with trackerzibot
+our $trackerzibot_compatible = 0;
 1;
